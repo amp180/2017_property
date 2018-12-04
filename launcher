@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+usage() {
+    echo "launcher [-option]"
+    echo "  -b build project"
+    echo "  -d deploy server"
+    echo "  -o open manager gui"
+    echo "  -h help"
+}
+
+build() {
+    mvn clean install
+}
+
+deploy() {
+    cp server/target/*.war $CATALINA_HOME/webapps
+    $CATALINA_HOME/bin/shutdown.sh
+    $CATALINA_HOME/bin/startup.sh
+}
+
+open_manager() {
+    xdg-open http://localhost:8080/manager/html
+}
+
+clean() {
+    rm $CATALINA_HOME/webapps/*.war
+}
+
+if [[ $# -eq 0 ]] ; then
+    usage
+    exit 1
+fi
+while getopts "hbdco" o; do
+    case "${o}" in
+        b)
+            build
+            ;;
+        d)
+            deploy
+            ;;
+        o)
+            open_manager
+            ;;
+        c)
+            clean
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
